@@ -1,6 +1,7 @@
 {
   stdenv,
   lib,
+  fetchFromGitHub,
   autoPatchelfHook,
   makeDesktopItem,
   glib,
@@ -26,19 +27,29 @@
 
 let
   pname = "Slicer3D";
-  version = "5.6.2";
+  version = "5.10.0";
 
   hwloc_old = hwloc.overrideAttrs (
     old:
     let
-      hwloc_version = "1.11.9";
+      hwloc_version = "1.11.13";
     in
     {
       version = hwloc_version;
-      src = fetchurl {
-        url = "https://www.open-mpi.org/software/hwloc/v${lib.versions.majorMinor hwloc_version}/downloads/hwloc-${hwloc_version}.tar.bz2";
-        sha256 = "sha256-OUMzGEJI1jyycIqXblfwUzfQO7UMM6owl/9cWnSoUWQ=";
+
+      src = fetchFromGitHub {
+        owner = "open-mpi";
+        repo = "hwloc";
+        tag = "hwloc-${hwloc_version}";
+        hash = "sha256-dR/N3yMGT97rZgj+p3uXZKB4hxv15lJmKWXXSPa1Nlw=";
       };
+
+      outputs = [
+        "out"
+        "lib"
+        "dev"
+        "man"
+      ];
     }
   );
 
@@ -59,7 +70,7 @@ stdenv.mkDerivation {
   src = fetchzip {
     name = "Slicer-${version}-linux-amd64.tar.gz";
     url = "http://download.slicer.org/download?os=linux&stability=release&version=${version}";
-    hash = "sha256-DmJS1yrwJBcAIRnVA8VdsO4u82E1MWX+uvRC+6dEXmM=";
+    hash = "sha256-TsPO/fqeNl3d0/PWrfIgRdcBRY0AjRhzdbEMo4SDfAE=";
     extension = "tar.gz";
   };
 
@@ -67,45 +78,44 @@ stdenv.mkDerivation {
     autoPatchelfHook
   ];
 
-  buildInputs =
-    [
-      freetype
-      zlib
-      libGL
-      libGLU
-      fontconfig
-      alsa-lib
-      postgresql
-      libxkbcommon
-      glib
-      pulseaudio
-      cups
-      unixODBC
-      libxcrypt-legacy
-      nss
-      nspr
-      hwloc
-      hwloc_old
-    ]
-    ++ (with xorg; [
-      libSM
-      libICE
-      libXrender
-      libXext
-      libX11
-      xkbutils
-      xcbutil
-      xcbutilwm
-      xcbutilimage
-      xcbutilrenderutil
-      xcbutilkeysyms
-      libXdamage
-      libXfixes
-      libXrandr
-      libXcursor
-      libXtst
-      libXcomposite
-    ]);
+  buildInputs = [
+    freetype
+    zlib
+    libGL
+    libGLU
+    fontconfig
+    alsa-lib
+    postgresql
+    libxkbcommon
+    glib
+    pulseaudio
+    cups
+    unixODBC
+    libxcrypt-legacy
+    nss
+    nspr
+    hwloc
+    hwloc_old
+  ]
+  ++ (with xorg; [
+    libSM
+    libICE
+    libXrender
+    libXext
+    libX11
+    xkbutils
+    xcbutil
+    xcbutilwm
+    xcbutilimage
+    xcbutilrenderutil
+    xcbutilkeysyms
+    libXdamage
+    libXfixes
+    libXrandr
+    libXcursor
+    libXtst
+    libXcomposite
+  ]);
 
   installPhase = ''
     runHook preInstall
